@@ -1,12 +1,12 @@
-# Lab Experiments
+# Applied AI Labs
 
-A collection of hands-on lab projects covering AI/ML topics.
+A collection of hands-on AI/ML projects.
 
 ## Projects
 
 | Folder | Topic |
 |--------|-------|
-| `ConvAI/` | AI-powered applications (Threat Analyzer, Stock Dashboard) |
-| `LLM/` | Large Language Model experiments |
-| `NLPApps/` | NLP application projects |
-| `Cloud Native/` | Cloud-native development |
+| `conversational-ai/` | Threat Analyzer, Stock Dashboard |
+| `large-language-models/` | LLM experiments |
+| `nlp-apps/` | NLP applications |
+| `cloud-native-web/` | Cloud-native web solutions |
