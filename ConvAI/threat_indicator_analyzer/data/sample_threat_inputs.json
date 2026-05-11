@@ -1,0 +1,26 @@
+[
+  {
+    "type": "IP Address",
+    "value": "185.220.101.45"
+  },
+  {
+    "type": "URL",
+    "value": "http://secure-bank-login.verify-now.com"
+  },
+  {
+    "type": "Domain",
+    "value": "fake-update-security.com"
+  },
+  {
+    "type": "CVE ID",
+    "value": "CVE-2023-34362"
+  },
+  {
+    "type": "File Hash",
+    "value": "44d88612fea8a8f36de82e1278abb02f"
+  },
+  {
+    "type": "Email Address",
+    "value": "admin@paypal-security-alert.com"
+  }
+]
