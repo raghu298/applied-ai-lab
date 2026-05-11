@@ -127,7 +127,12 @@ if st.button("📊 Analyze Stock"):
         if df is None or df.empty:
             st.error(f"Could not fetch data for '{symbol}'. Check the symbol and try again.")
         else:
-            # Calculate metrics
+            # Drop rows with NaN close prices (e.g., market closed)
+            df = df.dropna(subset=["Close"])
+            if df.empty:
+                st.error("No valid price data available. Market may be closed.")
+                st.stop()
+
             current_price = df["Close"].iloc[-1]
             prev_close = df["Close"].iloc[-2] if len(df) > 1 else current_price
             ma_20 = df["Close"].rolling(window=20).mean().iloc[-1]
@@ -136,14 +141,15 @@ if st.button("📊 Analyze Stock"):
             info = get_stock_info(symbol.upper())
 
             # --- Price Metrics ---
+            curr_sym = "₹" if symbol.upper().endswith((".NS", ".BO")) else "$"
             st.header("💰 Stock Overview")
             c1, c2, c3 = st.columns(3)
             with c1:
-                st.metric("Current Price", f"${current_price:.2f}", f"{current_price - prev_close:+.2f}")
+                st.metric("Current Price", f"{curr_sym}{current_price:.2f}", f"{current_price - prev_close:+.2f}")
             with c2:
-                st.metric("Previous Close", f"${prev_close:.2f}")
+                st.metric("Previous Close", f"{curr_sym}{prev_close:.2f}")
             with c3:
-                st.metric("20-Day Moving Avg", f"${ma_20:.2f}")
+                st.metric("20-Day Moving Avg", f"{curr_sym}{ma_20:.2f}")
 
             # --- Price Chart ---
             st.subheader("📉 Price Chart (Last 3 Months)")
