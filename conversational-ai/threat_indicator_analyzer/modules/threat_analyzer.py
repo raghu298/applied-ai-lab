@@ -47,8 +47,14 @@ def analyze_ip(value: str) -> dict:
             "recommended_action": "Block the IP immediately and investigate related traffic.",
         }
 
-    # Private IP ranges
-    if value.startswith(("10.", "172.16.", "192.168.")):
+    # Private IP ranges (RFC 1918)
+    parts = value.split(".")
+    is_private = (
+        value.startswith("10.")
+        or value.startswith("192.168.")
+        or (value.startswith("172.") and len(parts) == 4 and 16 <= int(parts[1]) <= 31)
+    )
+    if is_private:
         return {
             "classification": "Safe",
             "risk_score": 10,
@@ -256,7 +262,7 @@ def analyze_with_llm(indicator_type: str, value: str) -> dict | None:
             result["indicator_type"] = indicator_type
             result["indicator_value"] = value.strip()
             return result
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"LLM API error: {e}")
 
     return None

@@ -77,9 +77,9 @@ def analyze_sentiment(headlines: list[str]) -> str:
 
 def calculate_trend(current_price: float, ma_20: float) -> str:
     """Calculate stock trend based on 20-day MA."""
-    if current_price > ma_20 * 1.005:
+    if current_price > ma_20:
         return "Positive"
-    elif current_price < ma_20 * 0.995:
+    elif current_price < ma_20:
         return "Negative"
     return "Neutral"
 
@@ -136,6 +136,9 @@ if st.button("📊 Analyze Stock"):
             current_price = df["Close"].iloc[-1]
             prev_close = df["Close"].iloc[-2] if len(df) > 1 else current_price
             ma_20 = df["Close"].rolling(window=20).mean().iloc[-1]
+
+            if pd.isna(ma_20):
+                ma_20 = df["Close"].mean()  # fallback to simple average
 
             # Stock info
             info = get_stock_info(symbol.upper())
