@@ -151,7 +151,7 @@ if "memory" not in st.session_state:
 
 with st.sidebar:
     st.markdown("**Try asking**")
-    st.markdown("- what is 47 × 89?\n- remember my name is Priya\n- what's the date, "
+    st.markdown("- what is 47 × 89?\n- remember my name is Raghunath\n- what's the date, "
                 "and what did I ask you to remember?")
     if st.session_state.memory:
         st.markdown("**Remembered this chat**")
