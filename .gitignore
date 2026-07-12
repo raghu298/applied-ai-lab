@@ -33,3 +33,9 @@ workspace/
 *.ppt
 *.pages
 *.key
+
+# --- local tooling / generated / personal ---
+.claude/
+chroma_db/
+*.sqlite3
+video_scripts/
