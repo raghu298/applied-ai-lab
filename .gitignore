@@ -24,3 +24,12 @@ workspace/
 *.pt
 *.pth
 *.onnx
+
+# --- no personal / course documents in this public repo ---
+*.pdf
+*.docx
+*.doc
+*.pptx
+*.ppt
+*.pages
+*.key
