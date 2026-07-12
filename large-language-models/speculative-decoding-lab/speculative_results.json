@@ -1,0 +1,21 @@
+{
+  "target": "gpt2",
+  "draft": "distilgpt2",
+  "k": 4,
+  "n_new": 48,
+  "identical": "4/4",
+  "alpha": 0.548,
+  "tokens_per_pass": 3.05,
+  "base_passes": 192,
+  "spec_passes": 63,
+  "pass_reduction": 3.05,
+  "theory_tokens_per_pass": 2.1,
+  "k_sweep": {
+    "1": 1.55,
+    "2": 1.85,
+    "3": 2.01,
+    "4": 2.1,
+    "6": 2.18,
+    "8": 2.2
+  }
+}

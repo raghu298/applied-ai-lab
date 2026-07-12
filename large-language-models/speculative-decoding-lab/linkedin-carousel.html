@@ -1,0 +1,277 @@
+<title>Lab: Speculative Decoding</title>
+<style>
+  :root{
+    --ink:#0C1119; --panel:#141C28; --panel-2:#1B2534; --term:#080C13;
+    --line:rgba(255,255,255,.10); --line-strong:rgba(255,255,255,.18);
+    --text:#EAE8E1; --muted:#94A1B5; --faint:#5D6B80;
+    --accent:#E9A23B; --accent-soft:rgba(233,162,59,.13);
+    --data:#5AC8BC; --data-soft:rgba(90,200,188,.12); --good:#77C97F; --warn:#E8735B;
+    --sans:-apple-system,"SF Pro Display","Segoe UI",system-ui,Roboto,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,monospace;
+    --slideW:544px;
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --ink:#E7E4DC; --panel:#F8F6F0; --panel-2:#F0EDE4; --term:#151B24;
+      --line:rgba(18,26,38,.12); --line-strong:rgba(18,26,38,.20);
+      --text:#16202E; --muted:#54627A; --faint:#8A96AA;
+      --accent:#A85E08; --accent-soft:rgba(168,94,8,.10);
+      --data:#127A70; --data-soft:rgba(18,122,112,.10); --good:#2E8B4A; --warn:#C24A33;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#0C1119; --panel:#141C28; --panel-2:#1B2534; --term:#080C13;
+    --line:rgba(255,255,255,.10); --line-strong:rgba(255,255,255,.18);
+    --text:#EAE8E1; --muted:#94A1B5; --faint:#5D6B80;
+    --accent:#E9A23B; --accent-soft:rgba(233,162,59,.13);
+    --data:#5AC8BC; --data-soft:rgba(90,200,188,.12); --good:#77C97F; --warn:#E8735B;
+  }
+  :root[data-theme="light"]{
+    --ink:#E7E4DC; --panel:#F8F6F0; --panel-2:#F0EDE4; --term:#151B24;
+    --line:rgba(18,26,38,.12); --line-strong:rgba(18,26,38,.20);
+    --text:#16202E; --muted:#54627A; --faint:#8A96AA;
+    --accent:#A85E08; --accent-soft:rgba(168,94,8,.10);
+    --data:#127A70; --data-soft:rgba(18,122,112,.10); --good:#2E8B4A; --warn:#C24A33;
+  }
+
+  *{box-sizing:border-box}
+  body{background:var(--ink);color:var(--text);font-family:var(--sans);margin:0;
+    -webkit-font-smoothing:antialiased;line-height:1.5}
+  .page{max-width:900px;margin:0 auto;padding:40px 20px 72px}
+  .lede{padding:8px 4px 26px;border-bottom:1px solid var(--line);margin-bottom:34px}
+  .lede .mono{font-family:var(--mono);color:var(--accent);font-size:11px;
+    letter-spacing:.2em;text-transform:uppercase;margin:0 0 12px}
+  .lede h1{font-size:19px;letter-spacing:-.01em;margin:0 0 6px}
+  .lede p{color:var(--muted);font-size:14px;margin:0;max-width:62ch}
+
+  .deck{display:flex;flex-direction:column;gap:26px;align-items:center}
+  .slide{position:relative;width:var(--slideW);aspect-ratio:4/5;background:var(--panel);
+    border:1px solid var(--line);border-radius:16px;overflow:hidden;
+    display:flex;flex-direction:column;padding:38px 38px 20px;
+    box-shadow:0 24px 60px -32px rgba(0,0,0,.55)}
+  .slide::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;
+    background:linear-gradient(90deg,var(--accent),transparent 60%)}
+
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--accent);margin:0 0 auto;display:flex;gap:10px;align-items:center}
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);
+    box-shadow:0 0 0 4px var(--accent-soft)}
+
+  .body{flex:1;display:flex;flex-direction:column;justify-content:center;gap:17px;padding:16px 0}
+  .body.top{justify-content:flex-start;padding-top:22px}
+
+  h2{font-size:29px;line-height:1.1;letter-spacing:-.025em;margin:0;font-weight:800;text-wrap:balance}
+  h2 .hi{color:var(--accent)} h2 .data{color:var(--data)}
+  .lead{font-size:40px;line-height:1.04;letter-spacing:-.03em;font-weight:800;margin:0;text-wrap:balance}
+  .lead .hi{color:var(--accent)} .lead .data{color:var(--data)}
+  p.copy{font-size:16px;color:var(--muted);margin:0;max-width:44ch}
+  p.copy strong{color:var(--text);font-weight:600}
+  .kicker{font-size:16.5px;color:var(--muted);max-width:41ch;margin:0}
+  .kicker strong{color:var(--text);font-weight:600}
+  code.k{font-family:var(--mono);font-size:.9em;color:var(--accent);background:var(--accent-soft);padding:1px 6px;border-radius:5px}
+
+  .foot{display:flex;justify-content:space-between;align-items:center;
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--faint);border-top:1px solid var(--line);padding-top:13px;margin-top:14px}
+  .foot .h{color:var(--muted)} .foot .h b{color:var(--accent);font-weight:700}
+
+  .metarow{display:flex;gap:8px;flex-wrap:wrap}
+  .tag{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--muted);
+    border:1px solid var(--line-strong);border-radius:6px;padding:5px 11px}
+
+  /* callout */
+  .call{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;
+    background:var(--panel-2);padding:14px 16px}
+  .call .l{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  .call.good{border-left-color:var(--good)} .call.good .l{color:var(--good)}
+  .call p{margin:0;font-size:14.5px;color:var(--text);line-height:1.45}
+
+  /* draft/verify diagram */
+  .seq{display:flex;flex-direction:column;gap:11px;width:100%}
+  .track{display:flex;flex-direction:column;gap:6px}
+  .track .lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .toks{display:flex;gap:6px;flex-wrap:wrap}
+  .tk{font-family:var(--mono);font-size:12.5px;padding:7px 11px;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);color:var(--text)}
+  .tk.draft{border-color:var(--data);color:var(--data);background:var(--data-soft)}
+  .tk.ok{border-color:var(--good);color:var(--good);background:rgba(119,201,127,.10)}
+  .tk.bad{border-color:var(--warn);color:var(--warn);background:rgba(232,115,91,.10);text-decoration:line-through}
+  .tk.free{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .legend b{font-weight:400} .legend .s{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:middle}
+
+  /* terminal / code */
+  .term{width:100%;background:var(--term);border:1px solid var(--line);border-radius:11px;overflow:hidden}
+  .term .bar{display:flex;align-items:center;gap:7px;padding:9px 13px;border-bottom:1px solid var(--line)}
+  .term .bar i{width:9px;height:9px;border-radius:50%;background:var(--faint);opacity:.5}
+  .term .bar .ttl{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-left:6px;letter-spacing:.06em}
+  .term pre{margin:0;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:11.6px;line-height:1.62;color:var(--text)}
+  .term pre::-webkit-scrollbar{height:7px}.term pre::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:4px}
+  .term .p{color:var(--data)} .term .c{color:var(--faint)} .term .o{color:var(--muted)} .term .g{color:var(--good)} .term .kw{color:var(--data)} .term .fn{color:var(--accent)} .term .st{color:var(--good)}
+  .capt{font-family:var(--mono);font-size:11px;color:var(--muted);margin:11px 0 0;line-height:1.4}
+
+  /* big stat comparison bars */
+  .bars{display:flex;flex-direction:column;gap:15px;width:100%}
+  .barrow .t{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:6px}
+  .barrow .t b{color:var(--text);font-size:15px}
+  .bar{height:26px;border-radius:7px;position:relative;overflow:hidden;background:var(--panel-2);border:1px solid var(--line)}
+  .bar .fill{position:absolute;inset:0 auto 0 0;border-radius:6px}
+  .bar.base .fill{background:linear-gradient(90deg,var(--faint),var(--muted));width:100%;opacity:.55}
+  .bar.spec .fill{background:linear-gradient(90deg,var(--accent),#F4C46B);width:32.8%}
+  .bar .n{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:12.5px;color:var(--text);font-weight:700}
+  .bar.spec .n{color:#0C1119}
+
+  .statgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .stat{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:13px 15px}
+  .stat .v{font-size:26px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .stat .v.a{color:var(--accent)} .stat .v.g{color:var(--good)}
+  .stat .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+
+  .cards{display:flex;flex-direction:column;gap:11px}
+  .card{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:12px 15px}
+  .card .h{font-size:14px;font-weight:700;margin:0 0 2px}
+  .card .h .n{font-family:var(--mono);font-size:11px;color:var(--accent);margin-right:8px}
+  .card p{margin:0;font-size:12.8px;color:var(--muted);line-height:1.45}
+
+  @media (max-width:600px){:root{--slideW:min(92vw,420px)}.lead{font-size:32px}h2{font-size:23px}}
+</style>
+
+<div class="page">
+  <div class="lede">
+    <p class="mono">Lab notebook · LinkedIn carousel · 8 slides</p>
+    <h1>Screenshot each slide, post in order.</h1>
+    <p>Every number here is from a real run of two models (gpt2 + distilgpt2) on a laptop CPU. Code is in the caption. Toggle your viewer's theme — both are tuned.</p>
+  </div>
+
+  <div class="deck">
+
+    <!-- 1 · COVER -->
+    <section class="slide">
+      <p class="eyebrow"><span class="dot"></span>Lab notebook · Inference</p>
+      <div class="body">
+        <p class="lead">A smaller, dumber model made a big LLM run <span class="hi">3&times; fewer times.</span></p>
+        <p class="kicker">Same output, character for character. I ran the experiment on two real models. Here's the trick every serving engine ships — explained simply.</p>
+      </div>
+      <div class="metarow"><span class="tag">hypothesis</span><span class="tag">real models</span><span class="tag">measured</span></div>
+      <div class="foot"><span class="h">Field notes · <b>01</b></span><span>@raghunath</span></div>
+    </section>
+
+    <!-- 2 · THE INSIGHT -->
+    <section class="slide">
+      <p class="eyebrow"><span class="dot"></span>The insight</p>
+      <div class="body">
+        <h2>Generating is slow. <span class="hi">Checking is fast.</span></h2>
+        <p class="copy">Producing one token forces a full read of the big model's weights while the compute units sit idle — decoding is <strong>memory-bound.</strong></p>
+        <p class="copy">But <strong>verifying</strong> whether k tokens are what the model would've said costs just <strong>one</strong> forward pass. Same parallelism as reading a prompt.</p>
+        <div class="call"><p class="l">So the plan</p><p>Let a cheap model <span style="color:var(--data)">guess</span> ahead. Let the big model <span style="color:var(--accent)">verify</span> the whole guess at once.</p></div>
+      </div>
+      <div class="foot"><span class="h">Field notes · <b>02</b></span><span>@raghunath</span></div>
+    </section>
+
+    <!-- 3 · MECHANISM DIAGRAM -->
+    <section class="slide">
+      <p class="eyebrow"><span class="dot"></span>The mechanism</p>
+      <div class="body">
+        <div class="seq">
+          <div class="track"><span class="lab">1 · draft model guesses k=4 tokens (cheap, sequential)</span>
+            <div class="toks"><span class="tk draft">the</span><span class="tk draft">cat</span><span class="tk draft">sat</span><span class="tk draft">quiet</span></div>
+          </div>
+          <div class="track"><span class="lab">2 · big model verifies all 4 in ONE pass</span>
+            <div class="toks"><span class="tk ok">the</span><span class="tk ok">cat</span><span class="tk ok">sat</span><span class="tk bad">quiet</span><span class="tk free">on</span></div>
+          </div>
+          <div class="track"><span class="lab">3 · keep matched prefix + 1 free correction</span>
+            <div class="toks"><span class="tk ok">the</span><span class="tk ok">cat</span><span class="tk ok">sat</span><span class="tk free">on</span></div>
+          </div>
+        </div>
+        <div class="legend">
+          <b><span class="s" style="background:var(--data)"></span>guessed</b>
+          <b><span class="s" style="background:var(--good)"></span>accepted</b>
+          <b><span class="s" style="background:var(--warn)"></span>rejected</b>
+          <b><span class="s" style="background:var(--accent)"></span>free correction</b>
+        </div>
+        <p class="copy" style="font-size:14px">4 tokens produced. The big model ran <strong>once</strong>, not four times.</p>
+      </div>
+      <div class="foot"><span class="h">Field notes · <b>03</b></span><span>@raghunath</span></div>
+    </section>
+
+    <!-- 4 · THE EXPERIMENT -->
+    <section class="slide">
+      <p class="eyebrow"><span class="dot"></span>The experiment</p>
+      <div class="body top">
+        <div class="term">
+          <div class="bar"><i></i><i></i><i></i><span class="ttl">python — speculative_decoding.py</span></div>
+<pre><span class="c"># target = the model we WANT, verbatim</span>
+target = <span class="fn">load</span>(<span class="st">"gpt2"</span>)        <span class="c"># 124M</span>
+draft  = <span class="fn">load</span>(<span class="st">"distilgpt2"</span>)  <span class="c"># 82M, same tokenizer</span>
+
+<span class="c"># draft guesses k; target verifies in ONE pass</span>
+guesses = <span class="fn">draft_k</span>(draft, ids, k=<span class="st">4</span>)
+logits  = target(ids + guesses)      <span class="c"># single call</span>
+keep    = <span class="fn">longest_prefix_target_agrees</span>(logits, guesses)
+ids += keep + [<span class="fn">correction</span>(logits)]  <span class="c"># free token</span></pre>
+        </div>
+        <p class="capt">Greedy decoding, 4 prompts (chat, code, prose), 48 new tokens each. Laptop CPU.</p>
+      </div>
+      <div class="foot"><span class="h">Field notes · <b>04</b></span><span>@raghunath</span></div>
+    </section>
+
+    <!-- 5 · THE RESULT -->
+    <section class="slide">
+      <p class="eyebrow"><span class="dot"></span>The result</p>
+      <div class="body">
+        <div class="bars">
+          <div class="barrow">
+            <div class="t"><span>Big-model forward passes — <b>normal decoding</b></span><b>192</b></div>
+            <div class="bar base"><span class="fill"></span><span class="n">192 passes</span></div>
+          </div>
+          <div class="barrow">
+            <div class="t"><span>Big-model forward passes — <b>speculative</b></span><b style="color:var(--accent)">63</b></div>
+            <div class="bar spec"><span class="fill"></span><span class="n">63 passes</span></div>
+          </div>
+        </div>
+        <div class="statgrid">
+          <div class="stat"><div class="v g">4 / 4</div><div class="k">outputs identical</div></div>
+          <div class="stat"><div class="v a">3.05&times;</div><div class="k">fewer passes</div></div>
+          <div class="stat"><div class="v">~3.0</div><div class="k">tokens / target pass</div></div>
+          <div class="stat"><div class="v">0.55</div><div class="k">acceptance rate</div></div>
+        </div>
+      </div>
+      <div class="foot"><span class="h">Field notes · <b>05</b></span><span>@raghunath</span></div>
+    </section>
+
+    <!-- 6 · WHY IT'S EXACT -->
+    <section class="slide">
+      <p class="eyebrow"><span class="dot"></span>The elegant part</p>
+      <div class="body">
+        <h2>It's not an approximation. <span class="hi">It's exact.</span></h2>
+        <p class="copy">You might expect a shortcut like this to cost quality. It doesn't. A rejection-sampling rule — accept a guess with probability <code class="k">min(1, p/q)</code>, else resample from what's left — makes the output distribution <strong>mathematically identical</strong> to the big model sampling alone.</p>
+        <div class="call good"><p class="l">Why it matters</p><p>No quality knob to tune, no drift. That exactness is why vLLM, TGI and TensorRT-LLM all ship it by default.</p></div>
+      </div>
+      <div class="foot"><span class="h">Field notes · <b>06</b></span><span>@raghunath</span></div>
+    </section>
+
+    <!-- 7 · WHEN IT BACKFIRES -->
+    <section class="slide">
+      <p class="eyebrow"><span class="dot"></span>The honest caveats</p>
+      <div class="body">
+        <div class="cards">
+          <div class="card"><p class="h"><span class="n">A</span>It's a latency tool, not a throughput tool</p><p>At large batch sizes the GPU is already busy; verification competes with other users' work and can lower fleet throughput.</p></div>
+          <div class="card"><p class="h"><span class="n">B</span>Predictable text drafts best</p><p>Chat, code, and RAG that quotes its context hit high acceptance. Creative, high-temperature sampling drafts poorly.</p></div>
+          <div class="card"><p class="h"><span class="n">C</span>Tune the guess length k</p><p>Too long wastes drafts on rejections; too short wastes the trick. Measure acceptance, then set k.</p></div>
+        </div>
+      </div>
+      <div class="foot"><span class="h">Field notes · <b>07</b></span><span>@raghunath</span></div>
+    </section>
+
+    <!-- 8 · TAKEAWAY -->
+    <section class="slide">
+      <p class="eyebrow"><span class="dot"></span>What I took away</p>
+      <div class="body">
+        <p class="lead">Free speed hiding in <span class="hi">wasted bandwidth.</span></p>
+        <p class="kicker">The GPU was idling between memory reads the whole time. Speculative decoding just fills that gap with guesses — and refuses to accept a single wrong one.</p>
+      </div>
+      <div class="metarow"><span class="tag">full code + numbers in the comments</span></div>
+      <div class="foot"><span class="h">What optimization surprised you most?</span><span>@raghunath</span></div>
+    </section>
+
+  </div>
+</div>

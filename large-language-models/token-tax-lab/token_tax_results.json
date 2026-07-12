@@ -1,0 +1,32 @@
+{
+  "English": {
+    "text": "What is the weather today?",
+    "gpt2 (2019)": 6,
+    "cl100k (GPT-4)": 6,
+    "o200k (GPT-4o)": 6
+  },
+  "Spanish": {
+    "text": "¿Qué tiempo hace hoy?",
+    "gpt2 (2019)": 12,
+    "cl100k (GPT-4)": 6,
+    "o200k (GPT-4o)": 5
+  },
+  "Hindi": {
+    "text": "आज मौसम कैसा है?",
+    "gpt2 (2019)": 24,
+    "cl100k (GPT-4)": 18,
+    "o200k (GPT-4o)": 6
+  },
+  "Tamil": {
+    "text": "இன்று வானிலை எப்படி இருக்கிறது?",
+    "gpt2 (2019)": 85,
+    "cl100k (GPT-4)": 41,
+    "o200k (GPT-4o)": 9
+  },
+  "Chinese": {
+    "text": "今天天气怎么样？",
+    "gpt2 (2019)": 15,
+    "cl100k (GPT-4)": 10,
+    "o200k (GPT-4o)": 5
+  }
+}

@@ -1,0 +1,294 @@
+<title>Lab: The Token Tax</title>
+<style>
+  :root{
+    --ink:#0C1119; --panel:#141C28; --panel-2:#1B2534; --term:#080C13;
+    --line:rgba(255,255,255,.10); --line-strong:rgba(255,255,255,.18);
+    --text:#EAE8E1; --muted:#94A1B5; --faint:#5D6B80;
+    --accent:#E9A23B; --accent-soft:rgba(233,162,59,.13);
+    --data:#5AC8BC; --data-soft:rgba(90,200,188,.12); --good:#77C97F; --warn:#E8735B; --warn-soft:rgba(232,115,91,.12);
+    --sans:-apple-system,"SF Pro Display","Segoe UI",system-ui,Roboto,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,monospace;
+    --slideW:544px;
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --ink:#E7E4DC; --panel:#F8F6F0; --panel-2:#F0EDE4; --term:#151B24;
+      --line:rgba(18,26,38,.12); --line-strong:rgba(18,26,38,.20);
+      --text:#16202E; --muted:#54627A; --faint:#8A96AA;
+      --accent:#A85E08; --accent-soft:rgba(168,94,8,.10);
+      --data:#127A70; --data-soft:rgba(18,122,112,.10); --good:#2E8B4A; --warn:#C24A33; --warn-soft:rgba(194,74,51,.10);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#0C1119; --panel:#141C28; --panel-2:#1B2534; --term:#080C13;
+    --line:rgba(255,255,255,.10); --line-strong:rgba(255,255,255,.18);
+    --text:#EAE8E1; --muted:#94A1B5; --faint:#5D6B80;
+    --accent:#E9A23B; --accent-soft:rgba(233,162,59,.13);
+    --data:#5AC8BC; --data-soft:rgba(90,200,188,.12); --good:#77C97F; --warn:#E8735B; --warn-soft:rgba(232,115,91,.12);
+  }
+  :root[data-theme="light"]{
+    --ink:#E7E4DC; --panel:#F8F6F0; --panel-2:#F0EDE4; --term:#151B24;
+    --line:rgba(18,26,38,.12); --line-strong:rgba(18,26,38,.20);
+    --text:#16202E; --muted:#54627A; --faint:#8A96AA;
+    --accent:#A85E08; --accent-soft:rgba(168,94,8,.10);
+    --data:#127A70; --data-soft:rgba(18,122,112,.10); --good:#2E8B4A; --warn:#C24A33; --warn-soft:rgba(194,74,51,.10);
+  }
+
+  *{box-sizing:border-box}
+  body{background:var(--ink);color:var(--text);font-family:var(--sans);margin:0;
+    -webkit-font-smoothing:antialiased;line-height:1.5}
+  .page{max-width:900px;margin:0 auto;padding:40px 20px 72px}
+  .lede{padding:8px 4px 26px;border-bottom:1px solid var(--line);margin-bottom:34px}
+  .lede .mono{font-family:var(--mono);color:var(--accent);font-size:11px;letter-spacing:.2em;text-transform:uppercase;margin:0 0 12px}
+  .lede h1{font-size:19px;letter-spacing:-.01em;margin:0 0 6px}
+  .lede p{color:var(--muted);font-size:14px;margin:0;max-width:62ch}
+
+  .deck{display:flex;flex-direction:column;gap:26px;align-items:center}
+  .slide{position:relative;width:var(--slideW);aspect-ratio:4/5;background:var(--panel);
+    border:1px solid var(--line);border-radius:16px;overflow:hidden;
+    display:flex;flex-direction:column;padding:38px 38px 20px;
+    box-shadow:0 24px 60px -32px rgba(0,0,0,.55)}
+  .slide::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;
+    background:linear-gradient(90deg,var(--accent),transparent 60%)}
+
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--accent);margin:0 0 auto;display:flex;gap:10px;align-items:center}
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+
+  .body{flex:1;display:flex;flex-direction:column;justify-content:center;gap:17px;padding:16px 0}
+  .body.top{justify-content:flex-start;padding-top:22px}
+
+  h2{font-size:29px;line-height:1.1;letter-spacing:-.025em;margin:0;font-weight:800;text-wrap:balance}
+  h2 .hi{color:var(--accent)} h2 .data{color:var(--data)} h2 .bad{color:var(--warn)}
+  .lead{font-size:39px;line-height:1.05;letter-spacing:-.03em;font-weight:800;margin:0;text-wrap:balance}
+  .lead .hi{color:var(--accent)} .lead .bad{color:var(--warn)}
+  p.copy{font-size:16px;color:var(--muted);margin:0;max-width:44ch}
+  p.copy strong{color:var(--text);font-weight:600}
+  .kicker{font-size:16.5px;color:var(--muted);max-width:41ch;margin:0}
+  .kicker strong{color:var(--text);font-weight:600}
+  code.k{font-family:var(--mono);font-size:.9em;color:var(--accent);background:var(--accent-soft);padding:1px 6px;border-radius:5px}
+
+  .foot{display:flex;justify-content:space-between;align-items:center;
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--faint);border-top:1px solid var(--line);padding-top:13px;margin-top:14px}
+  .foot .h{color:var(--muted)} .foot .h b{color:var(--accent);font-weight:700}
+
+  .metarow{display:flex;gap:8px;flex-wrap:wrap}
+  .tag{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--muted);
+    border:1px solid var(--line-strong);border-radius:6px;padding:5px 11px}
+
+  .call{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;
+    background:var(--panel-2);padding:14px 16px}
+  .call .l{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  .call.good{border-left-color:var(--good)} .call.good .l{color:var(--good)}
+  .call p{margin:0;font-size:14.5px;color:var(--text);line-height:1.45}
+
+  /* terminal */
+  .term{width:100%;background:var(--term);border:1px solid var(--line);border-radius:11px;overflow:hidden}
+  .term .bar{display:flex;align-items:center;gap:7px;padding:9px 13px;border-bottom:1px solid var(--line)}
+  .term .bar i{width:9px;height:9px;border-radius:50%;background:var(--faint);opacity:.5}
+  .term .bar .ttl{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-left:6px;letter-spacing:.06em}
+  .term pre{margin:0;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:11.6px;line-height:1.62;color:#EAE8E1}
+  .term pre::-webkit-scrollbar{height:7px}.term pre::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:4px}
+  .term .p{color:var(--data)} .term .c{color:#5D6B80} .term .o{color:#94A1B5} .term .fn{color:var(--accent)} .term .st{color:var(--good)} .term .kw{color:var(--data)}
+  .capt{font-family:var(--mono);font-size:11px;color:var(--muted);margin:11px 0 0;line-height:1.4}
+
+  /* token chips */
+  .sent{font-size:19px;font-weight:700;margin:0 0 8px}
+  .chips{display:flex;flex-wrap:wrap;gap:5px}
+  .ch{font-family:var(--mono);font-size:12px;padding:5px 8px;border-radius:6px;border:1px solid var(--line);background:var(--panel-2)}
+  .ch.good{border-color:var(--good);color:var(--good);background:rgba(119,201,127,.09)}
+  .ch.bad{border-color:var(--warn);color:var(--warn);background:var(--warn-soft)}
+  .grp{display:flex;flex-direction:column;gap:7px}
+  .grp .lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .grp .lab b{color:var(--text);font-weight:700}
+
+  /* chart */
+  .chart{display:flex;flex-direction:column;gap:16px;width:100%}
+  .cgroup .cl{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+  .cgroup .cl .nm{font-size:14.5px;font-weight:700}
+  .cgroup .cl .tax{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .rows{display:flex;flex-direction:column;gap:4px}
+  .r{display:grid;grid-template-columns:92px 1fr 34px;align-items:center;gap:9px}
+  .r .g{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-align:right}
+  .r .tr{height:15px;background:var(--panel-2);border:1px solid var(--line);border-radius:5px;overflow:hidden}
+  .r .f{height:100%;border-radius:4px}
+  .r .f.old{background:var(--warn)}
+  .r .f.mid{background:var(--accent)}
+  .r .f.new{background:var(--good)}
+  .r .n{font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums;color:var(--text);font-weight:700}
+  .chart-legend{display:flex;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+  .chart-legend .s{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:middle}
+
+  .statgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .stat{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:13px 15px}
+  .stat .v{font-size:25px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .stat .v.a{color:var(--accent)} .stat .v.g{color:var(--good)} .stat .v.w{color:var(--warn)}
+  .stat .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+
+  .cards{display:flex;flex-direction:column;gap:11px}
+  .card{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:12px 15px}
+  .card .h{font-size:14px;font-weight:700;margin:0 0 2px}
+  .card .h .n{font-family:var(--mono);font-size:11px;color:var(--accent);margin-right:8px}
+  .card p{margin:0;font-size:12.8px;color:var(--muted);line-height:1.45}
+
+  @media (max-width:600px){:root{--slideW:min(92vw,420px)}.lead{font-size:31px}h2{font-size:23px}}
+</style>
+
+<div class="page">
+  <div class="lede">
+    <p class="mono">Lab notebook · LinkedIn carousel · 8 slides</p>
+    <h1>Screenshot each slide, post in order.</h1>
+    <p>Every number is from a real run of token_tax.py — three tokenizers, five languages, one sentence. Toggle your viewer's theme; both are tuned.</p>
+  </div>
+
+  <div class="deck">
+
+    <!-- 1 · COVER -->
+    <section class="slide">
+      <p class="eyebrow"><span class="dot"></span>Lab notebook · Tokenizers</p>
+      <div class="body">
+        <p class="lead">The same question once cost <span class="bad">14&times; more</span> in Tamil than in English.</p>
+        <p class="kicker">Not the answer — the <strong>question itself</strong>. I measured how three generations of tokenizers price five languages, starting from my LLM course lab.</p>
+      </div>
+      <div class="metarow"><span class="tag">one sentence</span><span class="tag">5 languages</span><span class="tag">3 tokenizers</span></div>
+      <div class="foot"><span class="h">Field notes · <b>01</b></span><span>@raghunath</span></div>
+    </section>
+
+    <!-- 2 · BACKGROUND -->
+    <section class="slide">
+      <p class="eyebrow"><span class="dot"></span>Background — what you actually pay for</p>
+      <div class="body">
+        <h2>LLMs don't see words. They see <span class="hi">tokens.</span></h2>
+        <p class="copy">Every API bill is per token. Every context window is measured in tokens. Every decode step produces one token.</p>
+        <p class="copy">So if a tokenizer chops your language into <strong>more pieces</strong>, you pay more money, fit less conversation, and wait longer — <strong>for the same meaning.</strong></p>
+        <div class="call"><p class="l">The question</p><p>Is that tax real, and how big is it? One way to find out: measure it.</p></div>
+      </div>
+      <div class="foot"><span class="h">Field notes · <b>02</b></span><span>@raghunath</span></div>
+    </section>
+
+    <!-- 3 · EXPERIMENT -->
+    <section class="slide">
+      <p class="eyebrow"><span class="dot"></span>The experiment</p>
+      <div class="body top">
+        <div class="term">
+          <div class="bar"><i></i><i></i><i></i><span class="ttl">python — token_tax.py</span></div>
+<pre>sentences = {
+  <span class="st">"English"</span>: <span class="st">"What is the weather today?"</span>,
+  <span class="st">"Spanish"</span>: <span class="st">"&iquest;Qu&eacute; tiempo hace hoy?"</span>,
+  <span class="st">"Hindi"</span>:   <span class="st">"आज मौसम कैसा है?"</span>,
+  <span class="st">"Tamil"</span>:   <span class="st">"இன்று வானிலை எப்படி இருக்கிறது?"</span>,
+  <span class="st">"Chinese"</span>: <span class="st">"今天天气怎么样？"</span>,
+}
+<span class="c"># three generations of tokenizers</span>
+gpt2   = <span class="fn">AutoTokenizer</span>.from_pretrained(<span class="st">"gpt2"</span>)   <span class="c"># 2019 · 50k</span>
+cl100k = tiktoken.<span class="fn">get_encoding</span>(<span class="st">"cl100k_base"</span>)   <span class="c"># GPT-4 · 100k</span>
+o200k  = tiktoken.<span class="fn">get_encoding</span>(<span class="st">"o200k_base"</span>)    <span class="c"># GPT-4o · 200k</span>
+
+<span class="c"># same meaning in, token counts out</span></pre>
+        </div>
+        <p class="capt">One sentence, identical meaning. Count what each tokenizer charges for it.</p>
+      </div>
+      <div class="foot"><span class="h">Field notes · <b>03</b></span><span>@raghunath</span></div>
+    </section>
+
+    <!-- 4 · THE SHRED -->
+    <section class="slide">
+      <p class="eyebrow"><span class="dot"></span>What 2019 does to Hindi</p>
+      <div class="body">
+        <div class="grp">
+          <span class="lab">English · <b>6 tokens</b> — real word pieces</span>
+          <div class="chips">
+            <span class="ch good">What</span><span class="ch good">&nbsp;is</span><span class="ch good">&nbsp;the</span><span class="ch good">&nbsp;weather</span><span class="ch good">&nbsp;today</span><span class="ch good">?</span>
+          </div>
+        </div>
+        <div class="grp">
+          <span class="lab">Hindi · आज मौसम कैसा है? · 16 characters · <b>24 tokens</b> — raw byte shrapnel</span>
+          <div class="chips">
+            <span class="ch bad">&agrave;&curren;</span><span class="ch bad">&#296;</span><span class="ch bad">&agrave;&curren;</span><span class="ch bad">&#317;</span><span class="ch bad">&agrave;&curren;</span><span class="ch bad">&reg;</span><span class="ch bad">&agrave;&yen;</span><span class="ch bad">&#302;</span><span class="ch bad">&agrave;&curren;</span><span class="ch bad">&cedil;</span><span class="ch bad">&agrave;&curren;</span><span class="ch bad">&reg;</span><span class="ch bad">&agrave;&curren;</span><span class="ch bad">&#311;</span><span class="ch bad">&agrave;&yen;</span><span class="ch bad">&#296;</span><span class="ch bad">&agrave;&curren;</span><span class="ch bad">&cedil;</span><span class="ch bad">&agrave;&curren;&frac34;</span><span class="ch bad">&agrave;&curren;</span><span class="ch bad">&sup1;</span><span class="ch bad">&agrave;&yen;</span><span class="ch bad">&#296;</span><span class="ch bad">?</span>
+          </div>
+        </div>
+        <p class="copy" style="font-size:14px">Not one of those pieces is a word. The script wasn't in the training data, so every character falls back to <strong>raw UTF-8 bytes</strong> — 2–3 tokens per character.</p>
+      </div>
+      <div class="foot"><span class="h">Field notes · <b>04</b></span><span>@raghunath</span></div>
+    </section>
+
+    <!-- 5 · RESULTS CHART -->
+    <section class="slide">
+      <p class="eyebrow"><span class="dot"></span>The result — tokens for the same sentence</p>
+      <div class="body">
+        <div class="chart">
+          <div class="cgroup">
+            <div class="cl"><span class="nm">Tamil</span><span class="tax">14.2&times; &rarr; 6.8&times; &rarr; 1.5&times; English</span></div>
+            <div class="rows">
+              <div class="r"><span class="g">gpt2 '19</span><span class="tr"><span class="f old" style="width:100%"></span></span><span class="n">85</span></div>
+              <div class="r"><span class="g">GPT-4 '23</span><span class="tr"><span class="f mid" style="width:48%"></span></span><span class="n">41</span></div>
+              <div class="r"><span class="g">GPT-4o '24</span><span class="tr"><span class="f new" style="width:10.6%"></span></span><span class="n">9</span></div>
+            </div>
+          </div>
+          <div class="cgroup">
+            <div class="cl"><span class="nm">Hindi</span><span class="tax">4.0&times; &rarr; 3.0&times; &rarr; 1.0&times; English</span></div>
+            <div class="rows">
+              <div class="r"><span class="g">gpt2 '19</span><span class="tr"><span class="f old" style="width:28.2%"></span></span><span class="n">24</span></div>
+              <div class="r"><span class="g">GPT-4 '23</span><span class="tr"><span class="f mid" style="width:21.2%"></span></span><span class="n">18</span></div>
+              <div class="r"><span class="g">GPT-4o '24</span><span class="tr"><span class="f new" style="width:7.1%"></span></span><span class="n">6</span></div>
+            </div>
+          </div>
+          <div class="cgroup">
+            <div class="cl"><span class="nm">English</span><span class="tax">the baseline</span></div>
+            <div class="rows">
+              <div class="r"><span class="g">all three</span><span class="tr"><span class="f new" style="width:7.1%"></span></span><span class="n">6</span></div>
+            </div>
+          </div>
+          <div class="chart-legend">
+            <span><span class="s" style="background:var(--warn)"></span>2019 · 50k vocab</span>
+            <span><span class="s" style="background:var(--accent)"></span>2023 · 100k</span>
+            <span><span class="s" style="background:var(--good)"></span>2024 · 200k</span>
+          </div>
+        </div>
+      </div>
+      <div class="foot"><span class="h">Field notes · <b>05</b></span><span>@raghunath</span></div>
+    </section>
+
+    <!-- 6 · WHY -->
+    <section class="slide">
+      <p class="eyebrow"><span class="dot"></span>Why the tax existed — and shrank</p>
+      <div class="body">
+        <h2>A tokenizer only compresses what it has <span class="hi">seen.</span></h2>
+        <p class="copy">Tokenizers learn their vocabulary from training data. gpt2's data was overwhelmingly English, so Devanagari and Tamil got no vocabulary slots at all — just the byte fallback.</p>
+        <p class="copy">Each generation trained on more multilingual text with a bigger budget: <strong>50k &rarr; 100k &rarr; 200k</strong> vocabulary slots. Real subwords for real scripts.</p>
+        <div class="statgrid">
+          <div class="stat"><div class="v w">85 &rarr; 9</div><div class="k">Tamil, same sentence</div></div>
+          <div class="stat"><div class="v g">1.0&times;</div><div class="k">Hindi tax on GPT-4o</div></div>
+        </div>
+      </div>
+      <div class="foot"><span class="h">Field notes · <b>06</b></span><span>@raghunath</span></div>
+    </section>
+
+    <!-- 7 · WHY IT STILL MATTERS -->
+    <section class="slide">
+      <p class="eyebrow"><span class="dot"></span>Why it still matters</p>
+      <div class="body">
+        <div class="cards">
+          <div class="card"><p class="h"><span class="n">A</span>The bill is per token</p><p>A tax of 3&times; means the same chatbot conversation costs 3&times; more for that user's language — silently.</p></div>
+          <div class="card"><p class="h"><span class="n">B</span>Context shrinks too</p><p>A "128k context" window holds far fewer Tamil words than English words if the tokenizer is inefficient.</p></div>
+          <div class="card"><p class="h"><span class="n">C</span>Latency scales with tokens</p><p>Every extra token is another decode step. More pieces, slower replies.</p></div>
+          <div class="card"><p class="h"><span class="n">D</span>Open models lag</p><p>Frontier tokenizers have nearly closed the gap. Many open-weight models still ship tokenizers that haven't.</p></div>
+        </div>
+      </div>
+      <div class="foot"><span class="h">Field notes · <b>07</b></span><span>@raghunath</span></div>
+    </section>
+
+    <!-- 8 · TAKEAWAY -->
+    <section class="slide">
+      <p class="eyebrow"><span class="dot"></span>What I took away</p>
+      <div class="body">
+        <p class="lead">Tokenization is <span class="hi">language policy,</span> written in code.</p>
+        <p class="kicker">Whose language compresses well is decided by training data and vocabulary budgets — long before anyone types a prompt. The gap is closing. It closed because someone measured it.</p>
+      </div>
+      <div class="metarow"><span class="tag">code + numbers in the comments</span></div>
+      <div class="foot"><span class="h">Have you checked what your language costs?</span><span>@raghunath</span></div>
+    </section>
+
+  </div>
+</div>

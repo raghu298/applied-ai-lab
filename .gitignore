@@ -6,3 +6,21 @@ venv/
 *.log
 .DS_Store
 Thumbs.db
+
+# --- added: keep the repo code-only ---
+node_modules/
+.ipynb_checkpoints/
+*.db
+*.db-wal
+*.db-shm
+session/
+workspace/
+*.dylib
+*.so
+# large model / data artifacts
+*.bin
+*.safetensors
+*.gguf
+*.pt
+*.pth
+*.onnx

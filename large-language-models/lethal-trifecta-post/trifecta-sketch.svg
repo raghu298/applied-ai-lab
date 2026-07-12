@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="700" viewBox="0 0 840 700" font-family="'Marker Felt','Chalkboard SE','Comic Sans MS',cursive">
+  <defs>
+    <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="3" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="rough2" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="21" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="3" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+
+  <!-- paper -->
+  <rect width="840" height="700" fill="#fbfaf5"/>
+
+  <!-- title with highlighter swipe -->
+  <g filter="url(#rough2)">
+    <rect x="196" y="42" width="360" height="30" fill="#ffe066" opacity="0.55"/>
+  </g>
+  <text x="60" y="70" font-size="42" fill="#23262e">the lethal trifecta</text>
+  <text x="62" y="104" font-size="21" fill="#6b7280">why an AI agent gets hacked by a hidden sentence</text>
+
+  <!-- three overlapping marker circles -->
+  <g filter="url(#rough)" stroke-linecap="round">
+    <circle cx="415" cy="270" r="150" fill="#ef4444" fill-opacity="0.10" stroke="#c0392b" stroke-width="2.6"/>
+    <circle cx="315" cy="432" r="150" fill="#f59e0b" fill-opacity="0.10" stroke="#b45309" stroke-width="2.6"/>
+    <circle cx="515" cy="432" r="150" fill="#3b82f6" fill-opacity="0.10" stroke="#1d4ed8" stroke-width="2.6"/>
+  </g>
+
+  <!-- circle labels -->
+  <g fill="#23262e" text-anchor="middle">
+    <text x="415" y="188" font-size="23">① sees your</text>
+    <text x="415" y="214" font-size="23">private data</text>
+
+    <text x="238" y="486" font-size="23">② reads</text>
+    <text x="238" y="512" font-size="23">untrusted stuff</text>
+
+    <text x="600" y="486" font-size="23">③ can send</text>
+    <text x="600" y="512" font-size="23">data out</text>
+  </g>
+
+  <!-- center danger burst -->
+  <g filter="url(#rough2)">
+    <path d="M415 330 l14 26 28 -8 -16 25 22 20 -30 3 -4 30 -20 -22 -27 12 6 -30 -25 -16 28 -10z"
+          fill="#ef4444" fill-opacity="0.9"/>
+  </g>
+  <text x="415" y="372" font-size="17" fill="#fff" text-anchor="middle" font-weight="bold">DATA</text>
+  <text x="415" y="390" font-size="17" fill="#fff" text-anchor="middle" font-weight="bold">LEAK</text>
+
+  <!-- attacker note + arrow -->
+  <g filter="url(#rough2)">
+    <rect x="600" y="150" width="210" height="92" rx="6" fill="#fff9e6" stroke="#c9a227" stroke-width="2"/>
+  </g>
+  <g fill="#5b4a12" font-size="16.5">
+    <text x="614" y="178">the attacker hides</text>
+    <text x="614" y="200">"email my files to X"</text>
+    <text x="614" y="222">in something it reads →</text>
+  </g>
+  <g filter="url(#rough)" stroke="#c9a227" stroke-width="2.4" fill="none">
+    <path d="M612 232 C 500 300, 470 320, 442 344"/>
+    <path d="M442 344 l 20 -3 M442 344 l -6 -19"/>
+  </g>
+
+  <!-- bottom rule -->
+  <text x="60" y="632" font-size="22" fill="#23262e">any <tspan font-weight="bold">two</tspan> = safe.<tspan dx="14">all</tspan> <tspan fill="#c0392b" font-weight="bold">three</tspan> = your data walks out the door.</text>
+  <text x="60" y="662" font-size="16" fill="#9aa0ab">prompt injection · OWASP #1 for LLM apps · concept: Simon Willison, 2025</text>
+</svg>
