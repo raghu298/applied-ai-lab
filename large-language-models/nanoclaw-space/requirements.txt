@@ -1,2 +1,2 @@
-gradio>=5.0
+streamlit>=1.38
 huggingface_hub>=0.25
