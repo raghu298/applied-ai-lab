@@ -1,0 +1,28 @@
+                                 precision    recall  f1-score   support
+
+                        allergy      0.909     1.000     0.952        10
+                      arthritis      1.000     1.000     1.000        10
+               bronchial asthma      0.833     1.000     0.909        10
+           cervical spondylosis      0.909     1.000     0.952        10
+                    chicken pox      1.000     1.000     1.000        10
+                    common cold      1.000     1.000     1.000        10
+                         dengue      1.000     0.900     0.947        10
+                       diabetes      1.000     1.000     1.000        10
+                  drug reaction      1.000     1.000     1.000         8
+               fungal infection      1.000     1.000     1.000         9
+gastroesophageal reflux disease      1.000     0.900     0.947        10
+                   hypertension      0.833     1.000     0.909        10
+                       impetigo      1.000     1.000     1.000        10
+                       jaundice      1.000     1.000     1.000         7
+                        malaria      1.000     1.000     1.000        10
+                       migraine      1.000     0.800     0.889        10
+           peptic ulcer disease      1.000     1.000     1.000        10
+                      pneumonia      1.000     0.900     0.947        10
+                      psoriasis      1.000     1.000     1.000        10
+                        typhoid      1.000     0.889     0.941         9
+        urinary tract infection      1.000     1.000     1.000         9
+                 varicose veins      1.000     1.000     1.000        10
+
+                       accuracy                          0.972       212
+                      macro avg      0.977     0.972     0.973       212
+                   weighted avg      0.976     0.972     0.972       212

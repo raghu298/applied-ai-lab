@@ -1,0 +1,36 @@
+{
+  "base_model": "answerdotai/ModernBERT-base",
+  "dataset": "gretelai/symptom_to_diagnosis",
+  "train_records": 853,
+  "test_records": 212,
+  "num_classes": 22,
+  "epochs": 6,
+  "batch_size": 16,
+  "learning_rate": 5e-05,
+  "train_seconds": 195.8,
+  "train_loss": 0.5019,
+  "baseline": {
+    "loss": 3.3175,
+    "model_preparation_time": 0.0008,
+    "accuracy": 0.0377,
+    "precision_macro": 0.0026,
+    "recall_macro": 0.0364,
+    "f1_macro": 0.0049,
+    "f1_weighted": 0.0051,
+    "runtime": 1.5214,
+    "samples_per_second": 139.35,
+    "steps_per_second": 4.601
+  },
+  "finetuned": {
+    "loss": 0.15,
+    "model_preparation_time": 0.0008,
+    "accuracy": 0.9717,
+    "precision_macro": 0.9766,
+    "recall_macro": 0.9722,
+    "f1_macro": 0.9725,
+    "f1_weighted": 0.9717,
+    "runtime": 1.8248,
+    "samples_per_second": 116.176,
+    "steps_per_second": 3.836
+  }
+}

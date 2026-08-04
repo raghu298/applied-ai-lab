@@ -1,0 +1,77 @@
+[
+  {
+    "id": "kb-01",
+    "title": "Emergency department access",
+    "text": "The emergency department at City General Hospital is open 24 hours a day, seven days a week, including public holidays. Patients presenting with chest pain, breathing difficulty, stroke symptoms, severe bleeding or loss of consciousness are seen immediately and do not require a prior appointment. Walk-in emergency patients are assessed by a triage nurse within 10 minutes of arrival."
+  },
+  {
+    "id": "kb-02",
+    "title": "Booking an out-patient appointment",
+    "text": "Out-patient appointments can be booked through the hospital mobile application, the patient web portal, or by calling the appointment desk between 8 AM and 8 PM. Routine appointments are normally available within seven working days. Same-day specialist slots are reserved for patients flagged as high urgency by the triage team. A confirmation message with the appointment reference is sent by SMS within five minutes of booking."
+  },
+  {
+    "id": "kb-03",
+    "title": "Fever management guidance",
+    "text": "For an adult with a fever below 102 degrees Fahrenheit, rest and oral fluids are usually sufficient. Paracetamol may be taken as directed on the packaging. A patient should contact the hospital if the fever lasts more than three days, rises above 103 degrees Fahrenheit, or is accompanied by a rash, stiff neck, confusion or breathing difficulty. Fever in an infant under three months of age always requires immediate medical review."
+  },
+  {
+    "id": "kb-04",
+    "title": "Diabetes clinic and blood sugar targets",
+    "text": "The diabetes clinic runs on Monday, Wednesday and Friday mornings. For most non-pregnant adults with diabetes the target fasting blood glucose is 80 to 130 milligrams per decilitre, and the target HbA1c is below 7 percent. Patients should bring their glucose log and current medication list to every visit. Episodes of blood glucose below 70 milligrams per decilitre must be reported to the clinic on the same day."
+  },
+  {
+    "id": "kb-05",
+    "title": "Fasting requirements for laboratory tests",
+    "text": "A fasting blood sugar test and a lipid profile require eight to twelve hours of fasting. Water is permitted during the fasting window, but tea, coffee, juice and smoking are not. Regular prescribed medication should be continued unless the ordering doctor advises otherwise. Samples for fasting tests are collected between 7 AM and 10 AM at the main laboratory on the ground floor."
+  },
+  {
+    "id": "kb-06",
+    "title": "Pharmacy and prescription refills",
+    "text": "The hospital pharmacy operates from 8 AM to 10 PM daily. Repeat prescriptions can be requested through the patient portal and are ready for collection within 24 hours. A prescription issued by a hospital doctor remains valid for six months for chronic medication and one month for antibiotics. Controlled medicines must be collected in person with a photo identity document."
+  },
+  {
+    "id": "kb-07",
+    "title": "Insurance, billing and cashless treatment",
+    "text": "The hospital accepts cashless treatment from empanelled insurance providers. Pre-authorisation for a planned admission should be submitted at least 48 hours in advance through the insurance desk on the first floor. For emergency admissions, pre-authorisation is filed within 24 hours of arrival. Patients receive an itemised bill at discharge, and billing queries are handled by the accounts office between 9 AM and 6 PM."
+  },
+  {
+    "id": "kb-08",
+    "title": "Vaccination services",
+    "text": "Routine childhood immunisation is provided at the paediatric clinic every Tuesday and Thursday. Adult vaccines including influenza, hepatitis B and tetanus are available at the preventive health desk on any working day. Patients should bring their existing vaccination record. A 30 minute observation period after vaccination is mandatory for all patients."
+  },
+  {
+    "id": "kb-09",
+    "title": "Chest pain and cardiac warning signs",
+    "text": "Chest pain that is crushing, spreads to the left arm, jaw or back, or occurs with sweating, nausea or breathlessness may indicate a heart attack and is a medical emergency. The patient should call the ambulance service on 108 immediately and should not drive themselves to the hospital. Chewing an aspirin is advised only if the patient has no known allergy to it and no active bleeding."
+  },
+  {
+    "id": "kb-10",
+    "title": "Dengue and mosquito-borne illness",
+    "text": "Dengue typically presents with high fever, severe headache, pain behind the eyes, joint and muscle pain, and a rash appearing three to four days after the fever begins. Patients should maintain a high oral fluid intake and avoid aspirin and ibuprofen because these increase bleeding risk. Warning signs that require immediate hospital review include abdominal pain, persistent vomiting, bleeding gums, and a sudden drop in temperature with lethargy."
+  },
+  {
+    "id": "kb-11",
+    "title": "Gastro-intestinal complaints and rehydration",
+    "text": "Acute diarrhoea in adults is usually self-limiting and resolves within three days. Oral rehydration solution should be taken after each loose stool to prevent dehydration. A patient must seek medical care if there is blood in the stool, a fever above 102 degrees Fahrenheit, signs of dehydration such as reduced urination and dizziness, or if symptoms persist beyond three days."
+  },
+  {
+    "id": "kb-12",
+    "title": "Respiratory infection and cough",
+    "text": "A cough associated with a common cold usually improves within two weeks. A cough lasting more than three weeks, producing blood, or accompanied by weight loss, night sweats or persistent fever requires evaluation for tuberculosis and other serious causes. The chest clinic accepts referrals from the triage desk and offers chest radiography on the same day."
+  },
+  {
+    "id": "kb-13",
+    "title": "Medical records and reports",
+    "text": "Laboratory and radiology reports are published to the patient portal as soon as they are verified, usually within 24 hours for routine tests. Physical copies of medical records can be requested from the records department with a written application and a photo identity document, and are issued within three working days. Records are retained by the hospital for a period of ten years."
+  },
+  {
+    "id": "kb-14",
+    "title": "Telemedicine consultations",
+    "text": "Video consultations are available for follow-up visits, prescription reviews and report discussions. They are not suitable for a first assessment of acute pain, injury, breathing difficulty or any emergency symptom. A telemedicine slot lasts 15 minutes, and a digital prescription is issued to the patient portal at the end of the consultation."
+  },
+  {
+    "id": "kb-15",
+    "title": "Patient data privacy",
+    "text": "All patient information handled by the hospital, including voice recordings submitted for triage, is treated as confidential health data. Recordings are stored only for the duration of the clinical episode and are accessible to the treating team and the patient. Data is not used for any secondary purpose without written patient consent, and every access to a record is logged for audit."
+  }
+]

@@ -1,0 +1,27 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Environment
+.venv/
+__pycache__/
+*.pyc
+
+# Model weights and training checkpoints
+models/
+mlruns/
+mlflow.db
+
+# Generated at runtime
+artifacts/llmops_metrics.jsonl
+artifacts/*.bak
+.DS_Store
+
+# Course submission documents and captured figures - not part of the code.
+# The document generators embed group member names and BITS IDs, so they
+# stay local too.
+docs/
+src/build_report.py
+src/build_ppt.py
+src/build_viva.py

@@ -1,0 +1,17 @@
+# Project Streamlit configuration.
+#
+# fileWatcherType none: the watcher enumerates every module inside
+# transformers looking for source changes, and each vision model module
+# raises ModuleNotFoundError for torchvision (not installed, not needed),
+# flooding the console with harmless tracebacks. The watcher only exists
+# for live code editing, which the demo does not need.
+#
+# address 127.0.0.1: the app serves patient text; keep it reachable only
+# from this machine, not the local network.
+
+[server]
+fileWatcherType = "none"
+address = "127.0.0.1"
+
+[browser]
+gatherUsageStats = false
