@@ -82,6 +82,25 @@ GENERATOR_MODEL = "Qwen/Qwen2.5-1.5B-Instruct"
 # Supporting model used for patient distress detection
 SENTIMENT_MODEL = "distilbert-base-uncased-finetuned-sst-2-english"
 
+# ---------------------------------------------------------------------------
+# Cloud-lite mode: Streamlit Community Cloud allows about 2.7 GB of RAM, far
+# below what the full model set needs, so HEALTH_ASSIST_LITE=1 swaps every
+# stage to a small model that fits. The pipeline, rule layer, thresholds and
+# safety guardrails are identical; only model capacity changes. The lite
+# triage checkpoint (bert-mini, 11M parameters) is small enough to live in
+# the git repository, so the cloud app needs no training step at boot.
+# ---------------------------------------------------------------------------
+LITE_MODE = os.environ.get("HEALTH_ASSIST_LITE") == "1"
+if LITE_MODE:
+    ASR_MODEL = "openai/whisper-tiny.en"
+    FINETUNED_TRIAGE_DIR = ROOT / "models_lite" / "triage-mini"
+    SUMMARISER_MODEL = "Falconsai/medical_summarization"
+    QA_MODEL = "distilbert-base-cased-distilled-squad"
+    EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+    # No generative reply model in lite mode: the patient message is composed
+    # by a deterministic template instead (see subtask6_guidance).
+    GENERATOR_MODEL = None
+
 # Fine-tuning dataset (healthcare domain)
 FINETUNE_DATASET = "gretelai/symptom_to_diagnosis"
 
