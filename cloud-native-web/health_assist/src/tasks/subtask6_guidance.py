@@ -61,34 +61,14 @@ def draft_reply(
     policy: str = "",
 ) -> dict:
     """Generate the patient-facing response with the safety layer applied."""
-    gen = model_hub.generator()
-    if gen is None:
-        # Lite deployment: no generative model fits in the memory budget, so
-        # the reply is composed deterministically. Structurally it makes the
-        # same promises as the generated one - acknowledge, state the next
-        # step, one practical instruction - and by construction it can never
-        # name a condition or a medication.
-        step = {
-            "EMERGENCY": "Emergency care has been arranged for you right now.",
-            "HIGH": "A same-day consultation with a specialist has been "
-                    "booked for you.",
-            "ROUTINE": "A standard out-patient appointment will be scheduled "
-                       "for you within the next few days.",
-        }.get(urgency, routing)
-        out = (
-            "Thank you for describing your symptoms; the triage team has "
-            f"reviewed them. {step} In the meantime, please rest, stay "
-            "hydrated, and avoid strenuous activity. If your symptoms "
-            "worsen, seek emergency care immediately."
-        )
-    else:
-        prompt = PROMPT.format(
-            transcript=transcript[:900],
-            urgency=urgency,
-            routing=routing,
-            policy=(policy or "No specific policy retrieved.")[:600],
-        )
-        out = gen(SYSTEM, prompt, max_new_tokens=200)
+    prompt = PROMPT.format(
+        transcript=transcript[:900],
+        urgency=urgency,
+        routing=routing,
+        policy=(policy or "No specific policy retrieved.")[:600],
+    )
+
+    out = model_hub.generator()(SYSTEM, prompt, max_new_tokens=200)
 
     # Strip any greeting or signature the model adds despite the instruction.
     lines = [ln.strip() for ln in out.splitlines() if ln.strip()]

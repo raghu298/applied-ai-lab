@@ -70,29 +70,16 @@ def sidebar():
     with st.sidebar:
         st.header("Models in use")
         ready = config.FINETUNED_TRIAGE_DIR.exists()
-        clf_label = (
-            "bert-mini fine-tuned (cloud-lite)"
-            if config.LITE_MODE
-            else "ModernBERT fine-tuned (this project)"
-        )
         rows = [
             ("1  Speech Recognition", config.ASR_MODEL),
-            ("2  Text Classification", clf_label),
+            ("2  Text Classification", "ModernBERT fine-tuned (this project)"),
             ("3  Clinical NER", config.NER_MODEL),
             ("4  Summarisation", config.SUMMARISER_MODEL),
             ("5  Question Answering", config.QA_MODEL),
-            ("6  Text Generation",
-             config.GENERATOR_MODEL or "deterministic template (cloud-lite)"),
+            ("6  Text Generation", config.GENERATOR_MODEL),
         ]
         for name, model in rows:
             st.markdown(f"**{name}**  \n`{model}`")
-        if config.LITE_MODE:
-            st.info(
-                "Cloud demo: lightweight models sized for the free hosting "
-                "tier. The full application runs locally with larger models "
-                "(whisper-large-v3-turbo, ModernBERT, bart-large, Qwen2.5) - "
-                "see the README."
-            )
         st.divider()
         if ready:
             st.success("Fine-tuned triage model loaded")

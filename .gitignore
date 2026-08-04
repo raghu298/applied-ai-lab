@@ -39,7 +39,3 @@ workspace/
 chroma_db/
 *.sqlite3
 video_scripts/
-
-# --- exception: the cloud-lite triage checkpoint is deliberately shipped ---
-!cloud-native-web/health_assist/models_lite/
-!cloud-native-web/health_assist/models_lite/**
