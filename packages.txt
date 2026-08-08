@@ -1,6 +1,2 @@
-# apt packages for Streamlit Community Cloud.
-# soundfile binds libsndfile, and librosa shells out to ffmpeg to decode the
-# mp3 and opus recordings the demo accepts; neither is present in the base
-# image, and without them audio upload fails at read time rather than at boot.
 libsndfile1
 ffmpeg
