@@ -31,6 +31,14 @@ def _load_audio(path: str, target_sr: int = 16000):
     return waveform.astype(np.float32)
 
 
+# An English-only checkpoint (the ".en" suffix) cannot be asked to identify the
+# spoken language or to translate, and it does not fail on foreign speech, it
+# invents English. Every stage downstream of here is English-only, so on a
+# multilingual checkpoint we ask Whisper for the translate task and carry the
+# detected language forward as a first-class part of the result.
+MULTILINGUAL_ASR = not config.ASR_MODEL.endswith(".en")
+
+
 @tracked("1_speech_recognition", config.ASR_MODEL)
 def transcribe(audio_path: str) -> dict:
     """Convert a recorded patient complaint into text.
@@ -42,8 +50,25 @@ def transcribe(audio_path: str) -> dict:
     """
     waveform = _load_audio(audio_path)
     duration_s = len(waveform) / 16000.0
-    result = model_hub.asr()(waveform)
+
+    kwargs = {}
+    if MULTILINGUAL_ASR:
+        kwargs["return_language"] = True
+        kwargs["generate_kwargs"] = {"task": "translate"}
+    result = model_hub.asr()(waveform, **kwargs)
     text = (result.get("text") or "").strip()
+
+    # Whisper reports the language per chunk. A recording is only treated as
+    # non-English when no chunk was heard as English, so a single misread
+    # chunk in an otherwise English note does not raise a false translation
+    # warning on the nurse's screen.
+    languages = [
+        (c.get("language") or "").lower()
+        for c in (result.get("chunks") or [])
+        if c.get("language")
+    ]
+    language = languages[0] if languages else ("english" if MULTILINGUAL_ASR else None)
+    translated = bool(languages) and not any(l.startswith("english") for l in languages)
 
     words = len(text.split())
     words_per_second = words / duration_s if duration_s > 0 else 0.0
@@ -56,6 +81,8 @@ def transcribe(audio_path: str) -> dict:
         "word_count": words,
         "words_per_second": round(words_per_second, 2),
         "confidence": round(reliability, 4),
+        "language": language,
+        "translated": translated,
     }
 
 
@@ -69,4 +96,8 @@ def accept_typed_text(text: str) -> dict:
         "word_count": len(text.split()),
         "words_per_second": 0.0,
         "confidence": 1.0,
+        # Typed text is taken as written. Nothing was transcribed, so there is
+        # no detected language and nothing was translated.
+        "language": None,
+        "translated": False,
     }

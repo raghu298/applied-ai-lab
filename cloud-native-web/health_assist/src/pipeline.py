@@ -17,6 +17,7 @@ six sub-tasks one application rather than six separate demonstrations.
 from __future__ import annotations
 
 import sys
+import time
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent))
@@ -46,9 +47,28 @@ def run_episode(
 ) -> dict:
     """Run one complete patient episode and return every intermediate result."""
 
+    # Per-stage wall time. The @tracked decorator already logs each model call
+    # for the LLMOps tab, but that is aggregated across every episode ever run.
+    # These are the timings for this one episode, which is what tells you which
+    # stage made this particular patient wait.
+    timings: dict[str, float] = {}
+    open_stage: list = [None, time.perf_counter()]
+
     def step(n: int, label: str):
+        now = time.perf_counter()
+        if open_stage[0] is not None:
+            timings[open_stage[0]] = round((now - open_stage[1]) * 1000, 1)
+        open_stage[0] = f"{n}. {label}"
+        open_stage[1] = now
         if progress:
             progress(n, label)
+
+    def close_last():
+        if open_stage[0] is not None:
+            timings[open_stage[0]] = round(
+                (time.perf_counter() - open_stage[1]) * 1000, 1
+            )
+            open_stage[0] = None
 
     # Sub-task 1 - Speech Recognition
     step(1, "Transcribing the voice note")
@@ -64,6 +84,24 @@ def run_episode(
     step(2, "Classifying the condition and urgency")
     triage = subtask2_triage.classify(transcript)
     distress = subtask2_triage.distress(transcript)
+
+    # A machine-translated complaint is evidence about the patient, not the
+    # patient's own words. Whisper identifies the spoken language reliably even
+    # at tiny size, but a small checkpoint's translation is not clinically
+    # trustworthy: on a Spanish test clip "me siento muy debil" (I feel very
+    # weak) came back as "I feel very happy". Everything downstream reads
+    # English, including the red-flag phrase list, so one inverted word can
+    # flip the routing without lowering the model's confidence. Language
+    # detection is therefore used as a gate rather than a green light, and a
+    # translated episode always reaches a human whatever the model scored.
+    if asr.get("translated"):
+        triage["review_required"] = True
+        triage["review_reason"] = (
+            f"the complaint was spoken in "
+            f"{(asr.get('language') or 'another language').title()} and machine-"
+            f"translated before triage, so the wording triage acted on is not "
+            f"the patient's own"
+        )
 
     # Sub-task 3 - Named Entity Recognition
     step(3, "Extracting clinical entities")
@@ -112,6 +150,8 @@ def run_episode(
         policy=policy["answer"],
     )
 
+    close_last()
+
     return {
         "transcript": transcript,
         "asr": asr,
@@ -122,6 +162,8 @@ def run_episode(
         "policy": policy,
         "summary": summary,
         "reply": reply,
+        "timings_ms": timings,
+        "total_ms": round(sum(timings.values()), 1),
     }
 
 
@@ -133,10 +175,24 @@ def format_console(result: dict) -> str:
         result["summary"],
         result["reply"],
     )
+    asr = result.get("asr") or {}
+    # The translation warning leads the record. A clinician reading the
+    # exported note has no other way to know the transcript is not what the
+    # patient actually said.
+    banner = ""
+    if asr.get("translated"):
+        banner = (
+            f"\n*** MACHINE TRANSLATION FROM "
+            f"{(asr.get('language') or 'UNKNOWN').upper()} ***\n"
+            "The transcript below is not the patient's own words. Triage was "
+            "computed from this translation.\nConfirm with the patient or an "
+            "interpreter before acting.\n"
+        )
     lines = [
         "=" * 72,
         "PATIENT EPISODE",
         "=" * 72,
+        banner,
         f"\n[1] TRANSCRIPT\n{t}",
         f"\n[2] TRIAGE\n    Condition : {tri['condition']} ({tri['confidence']:.1%})"
         + (f"\n    Red flag  : {tri['red_flag']} (rule layer overrode the model)"

@@ -8,6 +8,7 @@ Run from the project root:
 
 from __future__ import annotations
 
+import json
 import sys
 import tempfile
 from pathlib import Path
@@ -146,10 +147,13 @@ def render_urgency(triage: dict):
                 f"model."
             )
     if triage.get("review_required"):
+        reason = triage.get("review_reason") or (
+            f"model confidence is below the "
+            f"{config.TRIAGE_REVIEW_THRESHOLD:.0%} threshold"
+        )
         st.warning(
-            f"Model confidence is below the "
-            f"{config.TRIAGE_REVIEW_THRESHOLD:.0%} threshold. The case has "
-            "been queued for a triage nurse to confirm before any action."
+            f"Queued for a triage nurse to confirm before any action, because "
+            f"{reason}."
         )
     if triage.get("rule_escalated"):
         st.error(
@@ -244,14 +248,27 @@ def show_result(result: dict):
     st.divider()
     render_urgency(result["triage"])
 
-    st.markdown("### Transcript")
-    st.info(result["transcript"])
     asr = result["asr"]
+    st.markdown("### Transcript")
+    # A translated transcript is labelled before it is shown. Reading it as if
+    # the patient had written it is exactly the mistake the label prevents.
+    if asr.get("translated"):
+        st.error(
+            f"Machine translation from "
+            f"{(asr.get('language') or 'another language').title()}. These are "
+            f"not the patient's own words, and the triage below was computed "
+            f"from this translation. Confirm with the patient or an interpreter "
+            f"before acting."
+        )
+    st.info(result["transcript"])
     if asr["audio_seconds"]:
-        st.caption(
+        detail = (
             f"{asr['audio_seconds']} s of audio, {asr['word_count']} words, "
             f"{asr['words_per_second']} words per second"
         )
+        if asr.get("language"):
+            detail += f", detected language {asr['language']}"
+        st.caption(detail)
 
     c1, c2 = st.columns(2)
 
@@ -315,6 +332,48 @@ def show_result(result: dict):
     )
     if result["reply"]["safety_banner_applied"]:
         st.warning("Emergency safety banner was prepended by the rule layer.")
+
+    # An episode that cannot leave the browser is not a handover. The text
+    # record is the version a clinician reads; the JSON carries every
+    # intermediate output, including the overridden prediction and the stage
+    # timings, which is what an audit would need.
+    st.divider()
+    d1, d2, d3 = st.columns([1, 1, 2])
+    with d1:
+        st.download_button(
+            "Download handover record",
+            pipeline.format_console(result),
+            file_name="patient_episode.txt",
+            mime="text/plain",
+            width='stretch',
+        )
+    with d2:
+        st.download_button(
+            "Download full episode (JSON)",
+            json.dumps(result, indent=2, default=str),
+            file_name="patient_episode.json",
+            mime="application/json",
+            width='stretch',
+        )
+
+    timings = result.get("timings_ms") or {}
+    if timings:
+        with st.expander(
+            f"Stage timings for this episode ({result.get('total_ms', 0):.0f} ms total)"
+        ):
+            st.dataframe(
+                pd.DataFrame(
+                    [{"Stage": k, "Time (ms)": v} for k, v in timings.items()]
+                ),
+                hide_index=True,
+                width='stretch',
+            )
+            st.caption(
+                "Wall time for this episode only. The LLMOps tab aggregates "
+                "every invocation across all episodes. A cold stage includes "
+                "the one-time model load, so the first episode after start-up "
+                "is much slower than the ones after it."
+            )
 
 
 def qa_tab():

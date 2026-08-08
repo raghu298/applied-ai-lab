@@ -79,6 +79,12 @@ def classify(transcript: str, top_k: int = 3) -> dict:
         "rule_escalated": escalated,
         "red_flag": red_flag,
         "review_required": review_required,
+        "review_reason": (
+            f"model confidence {float(best['score']):.0%} is below the "
+            f"{config.TRIAGE_REVIEW_THRESHOLD:.0%} threshold"
+            if review_required
+            else None
+        ),
     }
 
 

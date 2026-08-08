@@ -92,7 +92,12 @@ SENTIMENT_MODEL = "distilbert-base-uncased-finetuned-sst-2-english"
 # ---------------------------------------------------------------------------
 LITE_MODE = os.environ.get("HEALTH_ASSIST_LITE") == "1"
 if LITE_MODE:
-    ASR_MODEL = "openai/whisper-tiny.en"
+    # whisper-tiny, not whisper-tiny.en. The multilingual checkpoint has the
+    # same 39M parameters and the same memory cost as the English-only one,
+    # so multilingual intake is free here. It matters because an English-only
+    # checkpoint does not refuse foreign speech, it hallucinates confident
+    # English from it, and that transcript would flow into triage unflagged.
+    ASR_MODEL = "openai/whisper-tiny"
     FINETUNED_TRIAGE_DIR = ROOT / "models_lite" / "triage-mini"
     SUMMARISER_MODEL = "Falconsai/medical_summarization"
     QA_MODEL = "distilbert-base-cased-distilled-squad"
