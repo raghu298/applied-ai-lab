@@ -70,16 +70,29 @@ def sidebar():
     with st.sidebar:
         st.header("Models in use")
         ready = config.FINETUNED_TRIAGE_DIR.exists()
+        clf_label = (
+            "bert-mini fine-tuned (cloud-lite)"
+            if config.LITE_MODE
+            else "ModernBERT fine-tuned (this project)"
+        )
         rows = [
             ("1  Speech Recognition", config.ASR_MODEL),
-            ("2  Text Classification", "ModernBERT fine-tuned (this project)"),
+            ("2  Text Classification", clf_label),
             ("3  Clinical NER", config.NER_MODEL),
             ("4  Summarisation", config.SUMMARISER_MODEL),
             ("5  Question Answering", config.QA_MODEL),
-            ("6  Text Generation", config.GENERATOR_MODEL),
+            ("6  Text Generation",
+             config.GENERATOR_MODEL or "deterministic template (cloud-lite)"),
         ]
         for name, model in rows:
             st.markdown(f"**{name}**  \n`{model}`")
+        if config.LITE_MODE:
+            st.info(
+                "Cloud demo: lightweight models sized for the free hosting "
+                "tier. The full application runs locally with larger models "
+                "(whisper-large-v3-turbo, ModernBERT, bart-large, Qwen2.5) - "
+                "see the README."
+            )
         st.divider()
         if ready:
             st.success("Fine-tuned triage model loaded")
@@ -495,140 +508,15 @@ def finetune_tab():
             )
 
 
-def api_tab():
-    st.subheader("Hugging Face API access")
-    st.caption(
-        "Model provenance retrieved live from the Hugging Face Hub REST API, "
-        "and the status of the hosted Inference API path."
-    )
-
-    from tasks import hf_api
-
-    if st.button("Retrieve model metadata from the Hub", type="primary"):
-        with st.spinner("Calling the Hugging Face Hub API"):
-            meta = hf_api.fetch_model_metadata()
-        st.session_state["hf_meta"] = meta
-
-    meta = st.session_state.get("hf_meta")
-    if meta:
-        st.success(
-            f"Retrieved metadata for {meta['retrieved']} of "
-            f"{len(hf_api.MODELS_IN_USE)} models."
-        )
-        st.dataframe(
-            pd.DataFrame(meta["models"]).rename(
-                columns={
-                    "sub_task": "Sub-task",
-                    "model_id": "Model",
-                    "pipeline_tag": "Task",
-                    "library": "Library",
-                    "downloads_30d": "Downloads",
-                    "likes": "Likes",
-                    "last_modified": "Updated",
-                }
-            ),
-            hide_index=True,
-            width='stretch',
-        )
-        st.caption(
-            "Each row is fetched at request time, so the table reflects the "
-            "current state of the model on the Hub rather than a value copied "
-            "into the code."
-        )
-
-    st.divider()
-    st.markdown("#### Serverless Inference API")
-    status = hf_api.token_status()
-    if status["valid"]:
-        st.success(status["detail"])
-    else:
-        st.info(status["detail"])
-    st.caption(
-        "The application serves every sub-task locally by default. Running "
-        "the models on this machine keeps patient audio and transcripts off "
-        "the network and removes any per-request cost. The remote path below "
-        "shows the same task served through the hosted endpoint, and is used "
-        "to contrast local and hosted latency."
-    )
-
-    st.markdown(
-        f"The comparison below runs sub-task 4 twice on the same model, "
-        f"`{hf_api.REMOTE_SUMMARISER}`. Once locally through the transformers "
-        f"library, and once through the hosted endpoint."
-    )
-    probe = st.text_area(
-        "Text to summarise on both paths",
-        "The patient reports a high fever for four days with severe headache, "
-        "pain behind the eyes, joint and muscle ache, and a rash that appeared "
-        "on the arms yesterday. The patient feels weak and nauseous.",
-        height=110,
-    )
-    if st.button("Run locally and remotely") and probe.strip():
-        with st.spinner("Running both paths"):
-            cmp = hf_api.compare_local_and_remote(probe)
-        st.session_state["hf_cmp"] = cmp
-
-    cmp = st.session_state.get("hf_cmp")
-    if cmp:
-        c1, c2 = st.columns(2)
-        with c1:
-            st.markdown("**Local (transformers library)**")
-            st.metric("Latency", f"{cmp['local']['latency_ms']:.0f} ms")
-            st.info(cmp["local"]["summary"])
-        with c2:
-            st.markdown("**Remote (Serverless Inference API)**")
-            if cmp["remote"].get("available"):
-                st.metric("Latency", f"{cmp['remote']['latency_ms']:.0f} ms")
-                st.info(cmp["remote"]["summary"])
-            else:
-                st.metric("Latency", "unavailable")
-                st.warning(cmp["remote"]["reason"])
-
-        if cmp["remote"].get("available"):
-            delta = cmp["delta_ms"]
-            faster = "faster" if delta < 0 else "slower"
-            st.caption(
-                f"The hosted endpoint was {abs(delta):.0f} ms {faster} than "
-                "local CPU execution on this run. The hosted path removes the "
-                "local compute cost but sends patient text off the machine and "
-                "depends on network availability, which is why local execution "
-                "remains the default for this application."
-            )
-
-    st.divider()
-    st.markdown("#### Question answering through the hosted endpoint")
-    st.caption(
-        f"Sub-task 5 served remotely on `{hf_api.REMOTE_QA}`, against a "
-        "passage from the hospital knowledge base."
-    )
-    if st.button("Run remote question answering"):
-        from tasks import subtask5_qa
-
-        kb = subtask5_qa.load_kb()
-        passage = kb[0]
-        out = hf_api.remote_question_answering(
-            "When is the emergency department open?", passage["text"]
-        )
-        if out["available"]:
-            st.success(
-                f"{out['answer']}  (score {out['score']:.2f}, "
-                f"{out['latency_ms']:.0f} ms)"
-            )
-            st.caption(f"Source passage: {passage['title']} ({passage['id']})")
-        else:
-            st.warning(out["reason"])
-
-
 def main():
     header()
     sidebar()
-    t1, t2, t3, t4, t5 = st.tabs(
+    t1, t2, t3, t4 = st.tabs(
         [
             "Patient episode",
             "Knowledge base QA",
             "LLMOps metrics",
             "Fine-tuned model",
-            "API access",
         ]
     )
     with t1:
@@ -639,8 +527,6 @@ def main():
         llmops_tab()
     with t4:
         finetune_tab()
-    with t5:
-        api_tab()
 
 
 if __name__ == "__main__":

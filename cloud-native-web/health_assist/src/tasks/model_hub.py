@@ -229,6 +229,9 @@ def qa():
 
 
 def generator():
+    """The chat SLM, or None in lite mode where no generator model is set."""
+    if not config.GENERATOR_MODEL:
+        return None
     return _get("gen", lambda: _ChatSLM(config.GENERATOR_MODEL))
 
 
